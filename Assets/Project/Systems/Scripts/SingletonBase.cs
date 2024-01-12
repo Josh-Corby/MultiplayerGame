@@ -12,7 +12,7 @@ namespace Project
     // seal inherited singletons so they can't be inherited
     public class SingletonBase<T> : MonoBehaviour where T : MonoBehaviour
     {
-        public bool dontDestroy;
+        public bool DontDestroy;
         public static T Instance { get; private set; }
 
         protected virtual void Awake()
@@ -20,7 +20,7 @@ namespace Project
             if (Instance == null)
             {
                 Instance = this as T;
-                if (dontDestroy) DontDestroyOnLoad(gameObject);
+                if (DontDestroy) DontDestroyOnLoad(gameObject);
             }
             else
             {

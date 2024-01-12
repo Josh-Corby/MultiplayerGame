@@ -261,6 +261,7 @@ namespace Project
 
                 bufferIndex = inputPayload.Tick % k_bufferSize;
 
+                Debug.Log("Server movement");
                 StatePayload statePayload = ProcessMovement(inputPayload);
                 _serverStateBuffer.Add(statePayload, bufferIndex);
             }
@@ -274,6 +275,7 @@ namespace Project
         {
             if (!IsClient || !IsOwner) return;
 
+            Debug.Log("client tick");
             var currentTick = _networkTimer.CurrentTick;
             var bufferIndex = currentTick % k_bufferSize;
 
@@ -289,7 +291,15 @@ namespace Project
             _clientInputBuffer.Add(inputPayload, bufferIndex);
             SendToServerRPC(inputPayload);
 
-            StatePayload statePayload = ProcessMovement(inputPayload);
+            StatePayload statePayload = new StatePayload()
+            {
+                Tick = currentTick,
+                NetworkObjectID = NetworkObjectId,
+                Rotation = _linkedRB.rotation,
+                Position = _linkedRB.position,
+                Velocity = _linkedRB.velocity
+            };
+
             _clientStateBuffer.Add(statePayload, bufferIndex);
 
             HandleServerReconciliation();
@@ -364,7 +374,7 @@ namespace Project
             int tickToReplay = _lastServerState.Tick;
 
             while(tickToReplay < _networkTimer.CurrentTick)
-            {
+            {          
                 int bufferIndex = tickToReplay % k_bufferSize;
                 StatePayload statePayload = ProcessMovement(_clientInputBuffer.Get(bufferIndex));
                 _clientStateBuffer.Add(statePayload, bufferIndex);
