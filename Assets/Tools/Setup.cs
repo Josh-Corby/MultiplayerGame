@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 using static System.IO.Directory;
@@ -30,3 +31,4 @@ public static class Setup
     }
 }
 
+#endif // Unity Editor

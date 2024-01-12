@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Project.Input
+namespace Project
 {
     [CreateAssetMenu(menuName = "Character Motor/Config", fileName = "CharacterMotorConfig")]
     public class CharacterMotorConfig : ScriptableObject

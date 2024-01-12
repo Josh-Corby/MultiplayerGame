@@ -1,4 +1,4 @@
-using KBCore.Refs;
+using Cinemachine;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,9 +6,12 @@ using UnityEngine.InputSystem;
 
 namespace Project.Input
 {
+
     public class PlayerCharacterMotor : CharacterMotor
     {
-        [SerializeField, Anywhere] protected Transform _linkedCamera;
+        [SerializeField] private Transform _linkedCamera;
+        [SerializeField] private CinemachineVirtualCamera _playerCamera;
+        [SerializeField] private AudioListener _playerAudioListener;
 
         protected float _currentCameraPitch = 0f;
         protected float _headbobProgress = 0f;
@@ -17,34 +20,34 @@ namespace Project.Input
         public float Camera_CurrentTime { get; protected set; }
 
         #region Input System Handling
-        protected void OnMove(InputValue value)
+        public void ReceiveMoveInput(Vector2 value)
         {
-            _input_Move = value.Get<Vector2>();
+            _input_Move = value;
         }
 
-        protected void OnLook(InputValue value)
+        public void ReceiveLookInput(Vector2 value)
         {
-            _input_Look = value.Get<Vector2>();
+            _input_Look = value;
         }
 
-        protected void OnJump(InputValue value)
+        public void ReceiveJumpInput(bool value)
         {
-            _input_Jump = value.isPressed;
+            _input_Jump = value;
         }
 
-        protected void OnRun(InputValue value)
+        public void ReceiveRunInput(bool value)
         {
-            _input_Run = value.isPressed;
+            _input_Run = value;
         }
 
-        protected void OnCrouch(InputValue value)
+        public void ReceiveCrouchInput(bool value)
         {
-            _input_Crouch = value.isPressed;
+            _input_Crouch = value;
         }
 
-        protected void OnPrimaryAction(InputValue value)
+        public void ReceivePrimaryActionInput(bool value)
         {
-            _input_PrimaryAction = value.isPressed;
+            _input_PrimaryAction = value;
 
             // need to inject pointer event
             if (_input_PrimaryAction && SendUIInteractions)
@@ -65,23 +68,22 @@ namespace Project.Input
                 }
             }
         }
-
-       
         #endregion
 
-        protected override void Awake()
+        public override void OnNetworkSpawn()
         {
-            base.Awake();
+            if(!IsOwner)
+            {
+                _playerAudioListener.enabled = false;
+                _playerCamera.Priority = 0;
+                return;
+            }
 
-            SendUIInteractions = _config.SendUIInteractions;
-        }
+            _playerAudioListener.enabled = true;
+            _playerCamera.Priority = 100;
 
-        protected override void Start()
-        {
             SetCursorLock(true);
-
-            base.Start();
-
+            SendUIInteractions = _config.SendUIInteractions;
             _linkedCamera.transform.localPosition = Vector3.up * (CurrentHeight + _config.Camera_VerticalOffset);
         }
 
