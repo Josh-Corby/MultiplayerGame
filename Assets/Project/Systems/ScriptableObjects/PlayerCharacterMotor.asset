@@ -110,8 +110,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  WalkSpeed: 2.5
-  RunSpeed: 3.75
+  WalkSpeed: 5
+  RunSpeed: 7.5
   CanRun: 1
   IsRunToggle: 1
   SlopeLimit: 60
@@ -133,8 +133,8 @@ MonoBehaviour:
   JumpTime: 0.25
   SendUIInteractions: 0
   MaxInteractionDistance: 2
-  FootstepInterval_Walking: 0.8
-  FootstepInterval_Running: 0.6
+  FootstepInterval_Walking: 0.4
+  FootstepInterval_Running: 0.3
   MinAirTimeForLandedSound: 0.2
   MaxStamina: 100
   StaminaCost_Jumping: 30

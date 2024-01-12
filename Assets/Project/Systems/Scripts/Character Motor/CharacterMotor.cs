@@ -1,10 +1,11 @@
-using System.Collections;
+using Kart;
+using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
-using UnityEngine.Windows;
+using Utilities;
 
 namespace Project
 {
@@ -12,18 +13,25 @@ namespace Project
     public struct InputPayload : INetworkSerializable
     {
         public int Tick;
+        public ulong NetworkObjectID;
+        public DateTime TimeStamp;
         public Vector2 InputVector;
+        public Vector3 Position;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             serializer.SerializeValue(ref Tick);
+            serializer.SerializeValue(ref NetworkObjectID);
+            serializer.SerializeValue(ref TimeStamp);
             serializer.SerializeValue(ref InputVector);
+            serializer.SerializeValue(ref Position);
         }
     }
 
     public struct StatePayload : INetworkSerializable
     {
         public int Tick;
+        public ulong NetworkObjectID;
         public Quaternion Rotation;
         public Vector3 Position;
         public Vector3 Velocity;
@@ -31,6 +39,7 @@ namespace Project
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             serializer.SerializeValue(ref Tick);
+            serializer.SerializeValue(ref NetworkObjectID);
             serializer.SerializeValue(ref Rotation);
             serializer.SerializeValue(ref Position);
             serializer.SerializeValue(ref Velocity);
@@ -48,6 +57,7 @@ namespace Project
             Falling
         }
 
+        #region References
         [SerializeField] protected Rigidbody _linkedRB;
         [SerializeField] protected CapsuleCollider _linkedCollider;
         [SerializeField] protected Animator _linkedAnimator;
@@ -55,22 +65,26 @@ namespace Project
         [SerializeField] protected HealthComponent _healthComponent;
         [SerializeField] protected StaminaComponent _staminaComponent;
 
-        [Header("Unity Events")]
-        [SerializeField] protected UnityEvent<bool> OnRunChanged = new UnityEvent<bool>();
-        [SerializeField] protected UnityEvent<Vector3> OnHitGround = new UnityEvent<Vector3>();
-        [SerializeField] protected UnityEvent<Vector3> OnBeginJump = new UnityEvent<Vector3>();
-        [SerializeField] protected UnityEvent<Vector3, float> OnFootStep = new UnityEvent<Vector3, float>();
+        protected ClientNetworkTransform _clientNetworkTransform;
+        #endregion
+
+        #region Fields
+        protected Vector2 _input_Move;
+        protected Vector2 _input_Look;
+        protected bool _input_Jump;
+        protected bool _input_Run;
+        protected bool _input_Crouch;
+        protected bool _input_PrimaryAction;
 
         protected float JumpTimeRemaining = 0f;
         protected float _timeSinceLastFootstepAudio = 0f;
         protected float _timeInAir = 0f;
-
-        public SurfaceEffectSource CurrentSurfaceSource { get; protected set; } = null;
         protected float _currentSurfaceLastTickTime;
-
         protected RaycastHit _groundedHitResult;
-        protected StateMachine _stateMachine;
+        #endregion
 
+        #region Properties
+        public SurfaceEffectSource CurrentSurfaceSource { get; protected set; } = null;
         public bool IsMovementLocked { get; protected set; } = false;
         public bool IsLookingLocked { get; protected set; } = false;
         public EJumpState JumpState { get; protected set; } = EJumpState.Neutral;
@@ -118,101 +132,167 @@ namespace Project
                 return CurrentSurfaceSource != null ? CurrentSurfaceSource.Effect(speed, EEffectableParameter.Speed) : speed;
             }
         }
+        #endregion
 
-        protected Vector2 _input_Move;
-        protected Vector2 _input_Look;
-        protected bool _input_Jump;
-        protected bool _input_Run;
-        protected bool _input_Crouch;
-        protected bool _input_PrimaryAction;
+        #region Unity Events
+        [Header("Unity Events")]
+        [SerializeField] protected UnityEvent<bool> OnRunChanged = new UnityEvent<bool>();
+        [SerializeField] protected UnityEvent<Vector3> OnHitGround = new UnityEvent<Vector3>();
+        [SerializeField] protected UnityEvent<Vector3> OnBeginJump = new UnityEvent<Vector3>();
+        [SerializeField] protected UnityEvent<Vector3, float> OnFootStep = new UnityEvent<Vector3, float>();
+        #endregion
 
+        #region Netcode
         // netcode general
-        private NetworkTimer _timer;
-        private const float k_serverTickRate = 60f; // 60 pfs
-        private const int k_bufferSize = 1024;
+        protected NetworkTimer _networkTimer;
+        protected const float k_serverTickRate = 60f; // 60 pfs
+        protected const int k_bufferSize = 1024;
 
         // netcode client specific
-        private CircularBuffer<StatePayload> _clientStateBuffer;
-        private CircularBuffer<InputPayload> _clientInputBuffer;
-        private StatePayload _lastServerState;
-        private StatePayload _lastProcessedState;
+        protected CircularBuffer<StatePayload> _clientStateBuffer;
+        protected CircularBuffer<InputPayload> _clientInputBuffer;
+        protected StatePayload _lastServerState;
+        protected StatePayload _lastProcessedState;
 
         // netcode server specific
-        private CircularBuffer<StatePayload> _serverStateBuffer;
-        private Queue<InputPayload> _serverInputQueue;
+        protected CircularBuffer<StatePayload> _serverStateBuffer;
+        protected Queue<InputPayload> _serverInputQueue;
 
         [Header("Netcode")]
-        [SerializeField] private float _reconciliationThreshold = 10f;
-        [SerializeField] private GameObject _serverCube;
-        [SerializeField] private GameObject _clientCube;
+        [SerializeField] protected float _reconciliationCooldownTime = 1f;
+        [SerializeField] protected float _reconciliationThreshold = 10f;
+        protected CountdownTimer _reconciliationTimer;
+
+        [SerializeField] protected float _extrapolationLimit = 0.5f; // 500 milliseconds
+        [SerializeField] protected float _extrapolationMultiplier = 1.2f;
+        protected StatePayload _extrapolationState;
+        protected CountdownTimer _extrapolationTimer;
+        #endregion
 
         protected void Awake()
         {          
             Init();
 
-            _timer = new NetworkTimer(k_serverTickRate);
+            _clientNetworkTransform = GetComponent<ClientNetworkTransform>();
+
+            _networkTimer = new NetworkTimer(k_serverTickRate);
             _clientStateBuffer = new CircularBuffer<StatePayload>(k_bufferSize);
             _clientInputBuffer = new CircularBuffer<InputPayload>(k_bufferSize);
 
             _serverStateBuffer = new CircularBuffer<StatePayload>(k_bufferSize);
             _serverInputQueue = new Queue<InputPayload>();
+
+            _reconciliationTimer = new CountdownTimer(_reconciliationCooldownTime);
+            _extrapolationTimer = new CountdownTimer(_extrapolationLimit);
+
+            _reconciliationTimer.OnTimerStart += () =>
+            {
+                _extrapolationTimer.Stop();
+            };
+
+            _extrapolationTimer.OnTimerStart += () =>
+            {
+                _reconciliationTimer.Stop();
+                SwitchAuthorityMode(AuthorityMode.Server);
+            };
+
+            _extrapolationTimer.OnTimerStop += () =>
+            {
+                _extrapolationState = default;
+                SwitchAuthorityMode(AuthorityMode.Client);
+            };
         }
 
         protected void Update()
         {
-            _timer.Update(Time.deltaTime);
+            _networkTimer.Update(Time.deltaTime);
+            _reconciliationTimer.Tick(Time.deltaTime);
+            _extrapolationTimer.Tick(Time.deltaTime);
 
             if (Keyboard.current.qKey.wasPressedThisFrame)
             {
                 transform.position += transform.forward * 20f;
             }
+
+            // run on Update or FixedUpdate, or both - depends on the game, consider exposing an option to the editor
+            Extrapolate();
         }
 
         protected void FixedUpdate()
         {
-            if (!IsOwner) return;
-
-            while (_timer.ShouldTick())
+            while (_networkTimer.ShouldTick())
             {
                 HandleClientTick();
                 HandleServerTick();
             }
+
+            // run on Update or FixedUpdate, or both - depends on the game, consider exposing an option to the editor
+            Extrapolate();
+        }
+
+        protected virtual void LateUpdate()
+        {
+            UpdateCrouched();
+        }
+
+        protected void Init()
+        {
+            _healthComponent.Init(_config);
+            _staminaComponent.Init(_config);
+
+            _linkedCollider.material = _config.Material_Default;
+            _linkedCollider.radius = _config.Radius;
+            _linkedCollider.height = CurrentHeight;
+            _linkedCollider.center = Vector3.up * (CurrentHeight * 0.5f);
+            OriginalDrag = _linkedRB.drag;
         }
 
         #region Netcode
         protected void HandleServerTick()
         {
+            if (!IsServer) return;
+
             var bufferIndex = -1;
-            while(_serverInputQueue.Count > 0)
+            InputPayload inputPayload = default;
+
+            while (_serverInputQueue.Count > 0)
             {
-                InputPayload inputPayload = _serverInputQueue.Dequeue();
+                inputPayload = _serverInputQueue.Dequeue();
 
                 bufferIndex = inputPayload.Tick % k_bufferSize;
 
-                StatePayload statePayload = SimulateMovement(inputPayload);
-                _serverCube.transform.position = statePayload.Position;
+                StatePayload statePayload = ProcessMovement(inputPayload);
                 _serverStateBuffer.Add(statePayload, bufferIndex);
             }
 
             if (bufferIndex == -1) return;
             SendToClientRPC(_serverStateBuffer.Get(bufferIndex));
+            HandleExtrapolation(_serverStateBuffer.Get(bufferIndex), CalculateLatencyInMillis(inputPayload));
         }
 
-        protected StatePayload SimulateMovement(InputPayload inputPayload)
+        protected void HandleClientTick()
         {
-            Physics.simulationMode = SimulationMode.Script;
+            if (!IsClient || !IsOwner) return;
 
-            //UpdateMovement(inputPayload.InputVector);
-            Physics.Simulate(Time.fixedDeltaTime);
-            Physics.simulationMode = SimulationMode.FixedUpdate;
+            var currentTick = _networkTimer.CurrentTick;
+            var bufferIndex = currentTick % k_bufferSize;
 
-            return new StatePayload()
+            InputPayload inputPayload = new InputPayload()
             {
-                Tick = inputPayload.Tick,
-                Position = _linkedRB.transform.position,
-                Rotation = _linkedRB.transform.rotation,
-                Velocity = _linkedRB.velocity
+                Tick = currentTick,
+                NetworkObjectID = NetworkObjectId,
+                TimeStamp = DateTime.Now,
+                InputVector = _input_Move,
+                Position = _linkedRB.position
             };
+
+            _clientInputBuffer.Add(inputPayload, bufferIndex);
+            SendToServerRPC(inputPayload);
+
+            StatePayload statePayload = ProcessMovement(inputPayload);
+            _clientStateBuffer.Add(statePayload, bufferIndex);
+
+            HandleServerReconciliation();
         }
 
         [ClientRpc]
@@ -222,28 +302,43 @@ namespace Project
             _lastServerState = statePayload;
         }
 
-        protected void HandleClientTick()
+        [ServerRpc]
+        protected void SendToServerRPC(InputPayload input)
         {
-            if (!IsClient) return;
+            _serverInputQueue.Enqueue(input);
+        }
 
-            var currentTick = _timer.CurrentTick;
-            var bufferIndex = currentTick % k_bufferSize;
+        protected bool ShouldExtrapolate(float latency) => latency < _extrapolationLimit && latency > Time.fixedDeltaTime;
 
-            InputPayload inputPayload = new InputPayload()
+        protected void Extrapolate()
+        {
+            if(IsServer && _extrapolationTimer.IsRunning)
             {
-                Tick = currentTick,
-                InputVector = _input_Move
-            };
+                _linkedRB.position += _extrapolationState.Position.With(y: 0);
+            }
+        }
 
-            _clientInputBuffer.Add(inputPayload, bufferIndex);
-            SendToServerRPC(inputPayload);
+        protected void HandleExtrapolation(StatePayload latest, float latency)
+        {
+            if(ShouldExtrapolate(latency))
+            {
+                if(_extrapolationState.Position != default)
+                {
+                    latest = _extrapolationState;
+                }
 
-            StatePayload statePayload = ProcessMovement(inputPayload);
-            _clientStateBuffer.Add(statePayload, bufferIndex);
+                var positionAdjustment = latest.Velocity * (1 + latency * _extrapolationMultiplier);
+                _extrapolationState.Position = positionAdjustment;
+                _extrapolationState.Rotation = latest.Rotation;
+                _extrapolationState.Velocity = latest.Velocity;
+                _extrapolationTimer.Start();
+            }
 
-            _clientCube.transform.position = statePayload.Position;
-
-            HandleServerReconciliation();
+            else
+            {
+                _extrapolationTimer.Stop();
+                // reconcile if desired
+            }
         }
 
         protected bool ShouldReconcile()
@@ -252,7 +347,29 @@ namespace Project
             bool isLastStateUndefinedOrDifferent = _lastProcessedState.Equals(default) 
                                                    || !_lastProcessedState.Equals(_lastServerState);
 
-            return isNewServerState && isLastStateUndefinedOrDifferent;
+            return isNewServerState && isLastStateUndefinedOrDifferent && !_reconciliationTimer.IsRunning && !_extrapolationTimer.IsRunning;
+        }
+
+        protected void ReconcileState(StatePayload rewindState)
+        {
+            _linkedRB.position = rewindState.Position;
+            _linkedRB.rotation = rewindState.Rotation;
+            _linkedRB.velocity = rewindState.Velocity;
+
+            if (!rewindState.Equals(_lastServerState)) return;
+
+            _clientStateBuffer.Add(rewindState, rewindState.Tick);
+
+            // replay all inputs from the rewind state to the current state
+            int tickToReplay = _lastServerState.Tick;
+
+            while(tickToReplay < _networkTimer.CurrentTick)
+            {
+                int bufferIndex = tickToReplay % k_bufferSize;
+                StatePayload statePayload = ProcessMovement(_clientInputBuffer.Get(bufferIndex));
+                _clientStateBuffer.Add(statePayload, bufferIndex);
+                tickToReplay++;
+            }
         }
 
         protected void HandleServerReconciliation()
@@ -271,39 +388,11 @@ namespace Project
 
             if (positionError > _reconciliationThreshold)
             {
-                Debug.Break();
                 ReconcileState(rewindState);
+                _reconciliationTimer.Start();
             }
 
             _lastProcessedState = _lastServerState;
-        }
-
-        protected void ReconcileState(StatePayload rewindState)
-        {
-            _linkedRB.position = rewindState.Position;
-            _linkedRB.rotation = rewindState.Rotation;
-            _linkedRB.velocity = rewindState.Velocity;
-
-            if (!rewindState.Equals(_lastServerState)) return;
-
-            _clientStateBuffer.Add(rewindState, rewindState.Tick);
-
-            // replay all inputs from the rewind state to the current state
-            int tickToReplay = _lastServerState.Tick;
-
-            while(tickToReplay < _timer.CurrentTick)
-            {
-                int bufferIndex = tickToReplay % k_bufferSize;
-                StatePayload statePayload = ProcessMovement(_clientInputBuffer.Get(bufferIndex));
-                _clientStateBuffer.Add(statePayload, bufferIndex);
-                tickToReplay++;
-            }
-        }
-
-        [ServerRpc]
-        protected void SendToServerRPC(InputPayload input)
-        {
-            _serverInputQueue.Enqueue(input);
         }
 
         protected StatePayload ProcessMovement(InputPayload input)
@@ -313,13 +402,30 @@ namespace Project
             return new StatePayload()
             {
                 Tick = input.Tick,
+                NetworkObjectID = input.NetworkObjectID,
                 Position = _linkedRB.transform.position,
                 Rotation = _linkedRB.transform.rotation,
                 Velocity = _linkedRB.velocity
             };
         }
 
+        protected static float CalculateLatencyInMillis(InputPayload inputPayload)
+        {
+            return (DateTime.Now - inputPayload.TimeStamp).Milliseconds / 1000f;
+        }
+
+        protected void SwitchAuthorityMode(AuthorityMode mode)
+        {
+            _clientNetworkTransform.authorityMode = mode;
+            bool shouldSync = mode == AuthorityMode.Client;
+            _clientNetworkTransform.SyncPositionX = shouldSync;
+            _clientNetworkTransform.SyncPositionY = shouldSync;
+            _clientNetworkTransform.SyncPositionZ = shouldSync;
+        }
+
         #endregion
+
+        #region Movement
 
         protected void Move()
         {
@@ -329,7 +435,7 @@ namespace Project
             _groundedHitResult = UpdateIsGrounded();
 
             UpdateSurfaceEffects();
-            UpdateCoyoteTime(wasGrounded);  
+            UpdateCoyoteTime(wasGrounded);
             UpdateRunning(_groundedHitResult);
 
             if (wasRunning != IsRunning)
@@ -337,36 +443,13 @@ namespace Project
 
             // switch back to grounded material
             if (!wasGrounded && IsGrounded)
-               OnLanded();
+                OnLanded();
 
             // track how long we have been in the air
             _timeInAir = IsGroundedOrInCoyoteTime ? 0f : (_timeInAir + Time.deltaTime);
 
             UpdateMovement(_input_Move);
         }
-
-        protected virtual void LateUpdate()
-        {
-            UpdateCrouched();
-        }
-
-        #region Setup
-
-        protected void Init()
-        {
-            _healthComponent.Init(_config);
-            _staminaComponent.Init(_config);
-
-            _linkedCollider.material = _config.Material_Default;
-            _linkedCollider.radius = _config.Radius;
-            _linkedCollider.height = CurrentHeight;
-            _linkedCollider.center = Vector3.up * (CurrentHeight * 0.5f);
-            OriginalDrag = _linkedRB.drag;
-        }
-
-        #endregion
-
-        #region Movement
 
         protected RaycastHit UpdateIsGrounded()
         {
@@ -460,7 +543,7 @@ namespace Project
                     movementVector = Vector3.zero;              
             } // in the air
             else
-                movementVector += Vector3.down * _config.FallVelocity * (_timer.MinTimeBetweenTicks / (1f / Time.fixedDeltaTime));
+                movementVector += Vector3.down * _config.FallVelocity * (_networkTimer.MinTimeBetweenTicks / (1f / Time.fixedDeltaTime));
 
             UpdateJumping(ref movementVector);
 
@@ -730,26 +813,6 @@ namespace Project
 
         #endregion
 
-        protected void UpdateFootstepAudio()
-        {
-            // is the player attempting to move?
-            if (_input_Move.magnitude > float.Epsilon)
-            {
-                // update time since last audio
-                _timeSinceLastFootstepAudio += Time.deltaTime;
-
-                // time for footstep audio?
-                float footstepInterval = IsRunning ? _config.FootstepInterval_Running : _config.FootstepInterval_Walking;
-                if (_timeSinceLastFootstepAudio >= footstepInterval)
-                {
-                    Debug.Log("Play footstep");
-                    OnFootStep?.Invoke(_linkedRB.position, _linkedRB.velocity.magnitude);
-
-                    _timeSinceLastFootstepAudio -= footstepInterval;
-                }
-            }           
-        }
-
         #region Surfaces
         protected void UpdateSurfaceEffects()
         {
@@ -780,5 +843,25 @@ namespace Project
             }
         }
         #endregion
+
+        protected void UpdateFootstepAudio()
+        {
+            // is the player attempting to move?
+            if (_input_Move.magnitude > float.Epsilon)
+            {
+                // update time since last audio
+                _timeSinceLastFootstepAudio += Time.deltaTime;
+
+                // time for footstep audio?
+                float footstepInterval = IsRunning ? _config.FootstepInterval_Running : _config.FootstepInterval_Walking;
+                if (_timeSinceLastFootstepAudio >= footstepInterval)
+                {
+                    Debug.Log("Play footstep");
+                    OnFootStep?.Invoke(_linkedRB.position, _linkedRB.velocity.magnitude);
+
+                    _timeSinceLastFootstepAudio -= footstepInterval;
+                }
+            }           
+        }
     }
 }
