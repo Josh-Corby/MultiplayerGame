@@ -193,7 +193,7 @@ namespace Project
             _extrapolationTimer.OnTimerStart += () =>
             {
                 _reconciliationTimer.Stop();
-                SwitchAuthorityMode(AuthorityMode.Server);
+                //SwitchAuthorityMode(AuthorityMode.Server);
             };
 
             _extrapolationTimer.OnTimerStop += () =>
@@ -208,11 +208,6 @@ namespace Project
             _networkTimer.Update(Time.deltaTime);
             _reconciliationTimer.Tick(Time.deltaTime);
             _extrapolationTimer.Tick(Time.deltaTime);
-
-            if (Keyboard.current.qKey.wasPressedThisFrame)
-            {
-                transform.position += transform.forward * 20f;
-            }
 
             // run on Update or FixedUpdate, or both - depends on the game, consider exposing an option to the editor
             Extrapolate();
@@ -232,6 +227,7 @@ namespace Project
 
         protected virtual void LateUpdate()
         {
+            if(!IsOwner) return;
             UpdateCrouched();
         }
 
@@ -252,6 +248,7 @@ namespace Project
         {
             if (!IsServer) return;
 
+            var currentTick = _networkTimer.CurrentTick;
             var bufferIndex = -1;
             InputPayload inputPayload = default;
 
@@ -261,8 +258,15 @@ namespace Project
 
                 bufferIndex = inputPayload.Tick % k_bufferSize;
 
-                Debug.Log("Server movement");
-                StatePayload statePayload = ProcessMovement(inputPayload);
+                StatePayload statePayload = new StatePayload()
+                {
+                    Tick = currentTick,
+                    NetworkObjectID = NetworkObjectId,
+                    Rotation = _linkedRB.rotation,
+                    Position = _linkedRB.position,
+                    Velocity = _linkedRB.velocity
+                };
+
                 _serverStateBuffer.Add(statePayload, bufferIndex);
             }
 
@@ -275,7 +279,6 @@ namespace Project
         {
             if (!IsClient || !IsOwner) return;
 
-            Debug.Log("client tick");
             var currentTick = _networkTimer.CurrentTick;
             var bufferIndex = currentTick % k_bufferSize;
 
@@ -290,16 +293,7 @@ namespace Project
 
             _clientInputBuffer.Add(inputPayload, bufferIndex);
             SendToServerRPC(inputPayload);
-
-            StatePayload statePayload = new StatePayload()
-            {
-                Tick = currentTick,
-                NetworkObjectID = NetworkObjectId,
-                Rotation = _linkedRB.rotation,
-                Position = _linkedRB.position,
-                Velocity = _linkedRB.velocity
-            };
-
+            StatePayload statePayload = ProcessMovement(inputPayload);
             _clientStateBuffer.Add(statePayload, bufferIndex);
 
             HandleServerReconciliation();
@@ -532,9 +526,6 @@ namespace Project
             if (IsMovementLocked)
                 inputVector = Vector2.zero;
 
-            _input_Move = inputVector;
-
-            Debug.Log(inputVector);
             // calculate movement input
             Vector3 movementVector = transform.forward * inputVector.y + transform.right * inputVector.x;
             movementVector *= CurrentMaxSpeed;

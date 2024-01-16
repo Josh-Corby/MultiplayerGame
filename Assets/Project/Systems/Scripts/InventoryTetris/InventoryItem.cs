@@ -44,15 +44,15 @@ public class InventoryItem : MonoBehaviour
         _rectTransform = GetComponent<RectTransform>();     
     }
 
-    internal void Set(ItemDataSO itemDataSO)
+    internal void Set(ItemDataSO itemDataSO, float scaleFactor)
     {
         _itemData = itemDataSO;
 
         GetComponent<Image>().sprite = itemDataSO.ItemIcon;
         Vector2 size = new()
         {
-            x = _itemData.Width * ItemGrid.TILE_SIZE_WIDTH,
-            y = _itemData.Height * ItemGrid.TILE_SIZE_HEIGHT
+            x = _itemData.Width * ItemGrid.TILE_SIZE_WIDTH * scaleFactor,
+            y = _itemData.Height * ItemGrid.TILE_SIZE_HEIGHT * scaleFactor
         };
 
         _rectTransform.sizeDelta = size;

@@ -167,10 +167,10 @@ namespace Project.Input
                                               _config.Camera_MinPitch,
                                               _config.Camera_MaxPitch);
 
-            //_linkedCamera.transform.localRotation = Quaternion.Euler(_currentCameraPitch, 0f, 0f);
-            _linkedCamera.transform.localRotation = Quaternion.Slerp(_linkedCamera.transform.localRotation, 
-                                                                     Quaternion.Euler(_currentCameraPitch, 0f, 0f), 
-                                                                     2f * Time.fixedDeltaTime);
+            _linkedCamera.transform.localRotation = Quaternion.Euler(_currentCameraPitch, 0f, 0f);
+            //_linkedCamera.transform.localRotation = Quaternion.Slerp(_linkedCamera.transform.localRotation, 
+                                                                     //Quaternion.Euler(_currentCameraPitch, 0f, 0f), 
+                                                                     //2f * Time.fixedDeltaTime);
         }
 
         public void SetCursorLock(bool locked)

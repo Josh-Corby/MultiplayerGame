@@ -19,6 +19,7 @@ namespace Project
         public bool Execute(Transform target, Transform detector, CountdownTimer timer)
         {
             if (timer.IsRunning) return false;
+            if (target == null) return false;
 
             var directionToTarget = target.position - detector.position;
             var angleToTarget = Vector3.Angle(directionToTarget, detector.forward);

@@ -86,6 +86,7 @@ GameObject:
   - component: {fileID: 3565182408276805006}
   - component: {fileID: 1821918028302409326}
   - component: {fileID: 6293697148145150116}
+  - component: {fileID: 7254895306570217673}
   m_Layer: 5
   m_Name: HUD
   m_TagString: Untagged
@@ -156,12 +157,29 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
   m_PresetInfoIsWorld: 0
+--- !u!114 &7254895306570217673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4692922614122693182}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!1001 &643291139505279149
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -458,10 +476,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2994549393447703375, guid: ad73daa5884d43d4ab6c07239b0e63a8, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4299890448225781795, guid: ad73daa5884d43d4ab6c07239b0e63a8, type: 3}
       propertyPath: _rootCanvas
       value: 
       objectReference: {fileID: 1821918028302409326}
+    - target: {fileID: 7632323893908552303, guid: ad73daa5884d43d4ab6c07239b0e63a8, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

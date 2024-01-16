@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f048a49e559a0ba4cb338bbf8da1913c, type: 3}
+  m_Name: Diamond
+  m_EditorClassIdentifier: 
+  Width: 1
+  Height: 1
+  ItemIcon: {fileID: 21300000, guid: 601403c734db6ff4ca34d1acf566736d, type: 3}
+  ItemPrefab: {fileID: 704068810948823599, guid: 014153656a1ebe04eb2fd010b6c44278, type: 3}

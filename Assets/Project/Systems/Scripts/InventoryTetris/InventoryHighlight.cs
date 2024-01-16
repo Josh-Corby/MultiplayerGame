@@ -1,19 +1,27 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class InventoryHighlight : MonoBehaviour
 {
-    [SerializeField] private RectTransform _highlighter;
+    private RectTransform _highlighter;
+    private Image _highlighterImage;
 
-    private void Awake()
+    private void Start()
     {
-        _highlighter = GameObject.Find("/HUD/Inventory/Highlighter").GetComponent<RectTransform>();
+        //InitHighlight();
+    }
 
+    private void InitHighlight()
+    {
+        _highlighter = GameObject.Find("Highlighter").GetComponent<RectTransform>();
+        _highlighterImage = _highlighter.GetComponent<Image>();
         Show(false);
     }
 
     public void Show(bool value)
     {
         _highlighter.gameObject.SetActive(value);
+        _highlighterImage.enabled = value;
     }
 
     public void SetSize(InventoryItem item)

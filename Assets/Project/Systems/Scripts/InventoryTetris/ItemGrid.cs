@@ -23,6 +23,7 @@ public class ItemGrid : ValidatedMonoBehaviour
     private Vector2Int _tileGridPosition  = new();
 
     [SerializeField] private GameObject _itemPrefab;
+    public float ScaleFactor => _rootCanvas.scaleFactor;
 
     private void Awake()
     {
@@ -49,8 +50,8 @@ public class ItemGrid : ValidatedMonoBehaviour
         _positionOnGrid.x = mousePosition.x - _rectTransform.position.x;
         _positionOnGrid.y = _rectTransform.position.y - mousePosition.y;
 
-        _tileGridPosition.x = (int)(_positionOnGrid.x / (TILE_SIZE_WIDTH * _rootCanvas.scaleFactor));
-        _tileGridPosition.y = (int)(_positionOnGrid.y / (TILE_SIZE_HEIGHT * _rootCanvas.scaleFactor));
+        _tileGridPosition.x = (int)(_positionOnGrid.x / (TILE_SIZE_WIDTH * ScaleFactor));
+        _tileGridPosition.y = (int)(_positionOnGrid.y / (TILE_SIZE_HEIGHT * ScaleFactor));
 
         return _tileGridPosition;
     }

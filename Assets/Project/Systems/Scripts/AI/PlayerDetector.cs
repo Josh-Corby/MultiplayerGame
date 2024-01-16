@@ -28,6 +28,7 @@ namespace Project
 
         public bool CanAttackPlayer()
         {
+            if(Player == null) return false;
             var directionToPlayer = Player.position - transform.position;
             return directionToPlayer.magnitude <= _attackRange;
         }

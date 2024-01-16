@@ -11,7 +11,7 @@ public class InventoryController : ValidatedMonoBehaviour
     [SerializeField] private List<ItemDataSO> _items;
 
     private ItemGrid _selectedItemGrid;
-    private ItemGrid _playerInventoryGrid;
+    [SerializeField] private ItemGrid _playerInventoryGrid;
     private InventoryItem _selectedItem;
     private InventoryItem _overlapItem;
     private RectTransform _rectTransform;
@@ -37,23 +37,11 @@ public class InventoryController : ValidatedMonoBehaviour
 
     private void Awake()
     {
-        _playerInventoryGrid = GameObject.Find("PlayerInventory").GetComponent<ItemGrid>();
-
-        GridInteract playerInteractGrid = _playerInventoryGrid.GetComponent<GridInteract>();
-        playerInteractGrid.SetInventoryController(this);
-
-        _canvasTransform = _playerInventoryGrid.transform.parent.GetComponent<RectTransform>();
-
-        ToggleInventory(false);
+        //InitializeController();
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            ToggleInventory();
-        }
-
         if (Input.GetKeyDown(KeyCode.R))
         {
             RotateItem();
@@ -73,9 +61,22 @@ public class InventoryController : ValidatedMonoBehaviour
         }
     }
 
-    private void ToggleInventory()
+    private void InitializeController()
+    {
+        _playerInventoryGrid = FindObjectOfType<ItemGrid>();
+
+        GridInteract playerInteractGrid = _playerInventoryGrid.GetComponent<GridInteract>();
+        playerInteractGrid.SetInventoryController(this);
+
+        _canvasTransform = _playerInventoryGrid.transform.parent.GetComponent<RectTransform>();
+
+        ToggleInventory(false);
+    }
+
+    public void ToggleInventory()
     {
         InventoryIsOpen = !InventoryIsOpen;
+        Debug.Log(InventoryIsOpen);
         _playerInventoryGrid.ToggleGrid(InventoryIsOpen);
         OnInventoryToggled?.Invoke(InventoryIsOpen);
     }
@@ -114,7 +115,7 @@ public class InventoryController : ValidatedMonoBehaviour
         InventoryItem item = CreateItemPrefab();
         _selectedItem = item;
         int selectedItemID = Random.Range(0, _items.Count);
-        item.Set(_items[selectedItemID]);
+        item.Set(_items[selectedItemID], _playerInventoryGrid.ScaleFactor);
     }
   
     private void InsertRandomItem()
@@ -136,7 +137,7 @@ public class InventoryController : ValidatedMonoBehaviour
     public bool AddToInventory(ItemDataSO itemData)
     {
         InventoryItem item = CreateItemPrefab();
-        item.Set(itemData);
+        item.Set(itemData, _playerInventoryGrid.ScaleFactor);
         return InsertItemToInventory(item);
     }
 

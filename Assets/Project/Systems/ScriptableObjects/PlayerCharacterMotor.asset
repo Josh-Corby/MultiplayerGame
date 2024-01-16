@@ -116,7 +116,7 @@ MonoBehaviour:
   IsRunToggle: 1
   SlopeLimit: 60
   Acceleration: 1
-  AutoParent: 1
+  AutoParent: 0
   AutoParentMode: 0
   CanCrouch: 1
   IsCrouchToggle: 1

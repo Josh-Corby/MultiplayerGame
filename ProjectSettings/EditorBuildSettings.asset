@@ -11,5 +11,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Project/Scenes/CharacterMotorScene.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Project/Scenes/NightmareTestScene.unity
+    guid: d0b9e7c119dd4c24aa181b5cfb8fc66b
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 2d7869d8febb46e40bfc45a3669ea9b5, type: 2}
