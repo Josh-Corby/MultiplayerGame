@@ -52,7 +52,7 @@ namespace Project
         private string ConnectionType => _encryption == EncryptionType.DTLS ? k_dtlsEncryption : k_wssEncryption;
 
         private const float k_lobbyHeartBeatInterval = 20f;
-        private const float k_lobbyPollInterval = 5f;
+        private const float k_lobbyPollInterval = 1.1f;
         private const string k_dtlsEncryption = "dtls"; // Datagram Transform Layer Security
         private const string k_wssEncryption = "wss";   // Web Socket Secure, use for WebGL builds
 
@@ -160,12 +160,12 @@ namespace Project
                     if (!IsLobbyHost())
                     {
                         Debug.Log("Start game");
-
-                        NetworkManager.Singleton.StartClient();
-                        CurrentLobby = null;
+                        JoinRelay(CurrentLobby.Data[k_startGame].Value);
                     }
-                }
 
+                    CurrentLobby = null;
+
+                }              
             }
 
             catch (LobbyServiceException e)
@@ -206,10 +206,6 @@ namespace Project
         {
             try
             {
-                Allocation allocation = await AllocateRelay();
-                string relayJoinCode = await GetRelayJoinCode(allocation);
-                Debug.Log(relayJoinCode);
-
                 Player player = GetPlayer();
 
                 CreateLobbyOptions options = new CreateLobbyOptions
@@ -222,25 +218,14 @@ namespace Project
                 }
                 };
 
-                CurrentLobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
+                Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
 
-                CurrentLobby = await Lobbies.Instance.UpdateLobbyAsync(CurrentLobby.Id, new UpdateLobbyOptions
-                {
-                    Data = new Dictionary<string, DataObject>
-                    {
-                        {k_startGame, new DataObject(DataObject.VisibilityOptions.Member, relayJoinCode) }
-                        }
-                });
-
+                CurrentLobby = lobby;
                 _heartbeatTimer.Start();
                 _pollForUpdatesTimer.Start();
 
-                RelayServerData relayServerData = new RelayServerData(allocation, ConnectionType);
-                NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
-
-
-                OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = CurrentLobby });
-                Debug.Log("Created Lobby " + CurrentLobby.Name);
+                OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
+                Debug.Log("Created Lobby " + lobby.Name);
 
             }
             catch (LobbyServiceException e)
@@ -294,13 +279,8 @@ namespace Project
                     Player = player,
                 });
 
-
                 _pollForUpdatesTimer.Start();
                 OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
-
-                string relayJoinCode = CurrentLobby.Data[k_startGame].Value;
-                JoinRelay(relayJoinCode);
-
             }
 
             catch (LobbyServiceException e)
@@ -382,11 +362,13 @@ namespace Project
                 try
                 {
                     Debug.Log("Start game");
+                    string relayJoinCode = await CreateRelay();
+
                     Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(CurrentLobby.Id, new UpdateLobbyOptions
                     {
                         Data = new Dictionary<string, DataObject>
                         {
-                            { k_startGame, new DataObject(DataObject.VisibilityOptions.Member, CurrentLobby.Data[k_startGame].Value) }
+                            { k_startGame, new DataObject(DataObject.VisibilityOptions.Member, relayJoinCode) }
                         }
                     });
 
@@ -403,7 +385,7 @@ namespace Project
             }
         }
 
-        private async void CreateRelay()
+        private async Task<string> CreateRelay()
         {
             try
             {
@@ -412,10 +394,13 @@ namespace Project
                 Debug.Log(relayJoinCode);
                 RelayServerData relayServerData = new RelayServerData(allocation, ConnectionType);
                 NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
+                NetworkManager.Singleton.StartHost();
+                return relayJoinCode;
             }
             catch (RelayServiceException e)
             {
                 Debug.Log(e.Message);
+                return default;
             }
         }
 
@@ -457,6 +442,7 @@ namespace Project
                 JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(relayJoinCode);
                 RelayServerData relayServerData = new RelayServerData(joinAllocation, ConnectionType);
                 NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
+                NetworkManager.Singleton.StartClient();
             }
             catch (RelayServiceException e)
             {
