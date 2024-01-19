@@ -62,7 +62,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 1ec46d24ba14ab14d87b6f6b2242b8b1, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -116,6 +116,7 @@ GameObject:
   - component: {fileID: 8567086120954423175}
   - component: {fileID: 6029412125692410390}
   - component: {fileID: 4746504753311693199}
+  - component: {fileID: 5008043001166887147}
   - component: {fileID: 7274133637396948994}
   - component: {fileID: 7452458264172473069}
   - component: {fileID: 17429914906036119}
@@ -187,6 +188,26 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &5008043001166887147
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5443712010677197272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 207737099
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!114 &7274133637396948994
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -199,9 +220,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44409025b10ebeb489a27f9e403b8ca2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _detectionAngle: 60
-  _detectionRadius: 8
-  _innerDetectionRadius: 2
+  _detectionAngle: 40
+  _detectionRadius: 10
+  _innerDetectionRadius: 3
   _detectionCooldown: 1
   _attackRange: 2
 --- !u!114 &7452458264172473069
@@ -216,9 +237,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac51723929efc3342bf532d1f904113b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _detectionAngle: 60
-  _detectionRadius: 10
-  _innerDetectionRadius: 5
+  _detectionAngle: 140
+  _detectionRadius: 40
+  _innerDetectionRadius: 10
   _detectionCooldown: 0.2
   _activeLights: []
 --- !u!114 &17429914906036119
@@ -236,11 +257,12 @@ MonoBehaviour:
   _agent: {fileID: 6029412125692410390}
   _playerDetector: {fileID: 7274133637396948994}
   _animator: {fileID: 374091887584643598}
-  _wanderRadius: 10
+  _wanderRadius: 20
   _timeBetweenAttacks: 1
+  _attackDamage: 10
+  _wanderSpeed: 3
+  _patrolSpeed: 3
+  _chaseSpeed: 6
   _lightDetector: {fileID: 7452458264172473069}
-  _patrolPoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  _patrolPoints: []
+  _toLightSpeed: 8

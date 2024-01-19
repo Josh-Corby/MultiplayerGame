@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -2669,6 +2669,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1312245779}
   - component: {fileID: 1312245778}
+  - component: {fileID: 1312245780}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -2753,6 +2754,29 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!114 &1312245780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1312245777}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!1 &1359621299
 GameObject:
   m_ObjectHideFlags: 0
@@ -3160,7 +3184,7 @@ MonoBehaviour:
   NetworkConfig:
     ProtocolVersion: 0
     NetworkTransport: {fileID: 1479612438}
-    PlayerPrefab: {fileID: 8173592204697117141, guid: cfbc198fc8cfe544d9e23ad47a89e099, type: 3}
+    PlayerPrefab: {fileID: 0}
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: 02099b1afa0621e44b5098ef80c2c86b, type: 2}
@@ -4111,10 +4135,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dc1dc061a43b4740b5d584cd966b674, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DontDestroy: 1
+  DontDestroy: 0
   _gameScene:
-    asset: {fileID: 102900000, guid: d0b9e7c119dd4c24aa181b5cfb8fc66b, type: 3}
-    guid: d0b9e7c119dd4c24aa181b5cfb8fc66b
+    asset: {fileID: 102900000, guid: 9fc0d4010bbf28b4594072e72b8655ab, type: 3}
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
   maxPlayers: 4
   _encryption: 0
 --- !u!4 &1624603083
