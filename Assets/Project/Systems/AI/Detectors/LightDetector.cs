@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Events;
 using Utilities;
 
 namespace Project
@@ -15,21 +17,8 @@ namespace Project
 
         IDetectionStrategy _detectionStrategy;
 
-        [SerializeField] private List<SceneLight> _activeLights = new();
+        [field: SerializeField] public SceneLight CurrentDetectedLight { get; private set; }
 
-        public SceneLight CurrentDetectedLight { get; private set; }
-
-        private void OnEnable()
-        {
-            SceneLightManager.OnLightActivated += (activatedLight) => _activeLights.Add(activatedLight);
-            SceneLightManager.OnLightDeactivated += (deactivatedLight) => _activeLights.Remove(deactivatedLight);
-        }
-
-        private void OnDisable()
-        {
-            SceneLightManager.OnLightActivated -= (activeLights) => _activeLights.Add(activeLights);
-            SceneLightManager.OnLightDeactivated -= (deactivatedLight) => _activeLights.Remove(deactivatedLight);
-        }
 
         private void Start()
         {
@@ -39,24 +28,59 @@ namespace Project
 
         private void Update() => _detectionTimer.Tick(Time.deltaTime);
 
-        public bool CanSeeLight() => _detectionTimer.IsRunning || CanSeeAnyLight();
+        public bool CanSeeLight() => (_detectionTimer.IsRunning || CanSeeAnyLight()) && CurrentDetectedLight != null;
 
         private bool CanSeeAnyLight()
         {
-            for(int i = _activeLights.Count - 1; i >= 0; i--)
+            List<SceneLight> candidateLights = new List<SceneLight>(SceneLightManager.Instance.AllLights);
+
+            if(candidateLights.Count == 0)
             {
-                SceneLight candidateLight = _activeLights[i];              
-                if(!candidateLight.IsOn) continue;
+                CurrentDetectedLight = null;
+                return false;
+            }
+
+            for(int i = candidateLights.Count - 1; i >= 0; i--)
+            {
+                SceneLight candidateLight = candidateLights[i];
+                if (!candidateLight.IsOn.Value)
+                {
+                    candidateLights.Remove(candidateLight);
+                    continue;
+                }
 
                 if(_detectionStrategy.Execute(candidateLight.transform.GetChild(0), transform, _detectionTimer))
-                {
                     CurrentDetectedLight = candidateLight;
-                    return true;
+                else
+                    candidateLights.Remove(candidateLight);
+            }
+
+            SceneLight TargetLight = GetClosestCandidateLight(candidateLights);
+            if (CurrentDetectedLight != TargetLight)
+            {
+                CurrentDetectedLight = TargetLight;
+            }
+            return true;
+        }
+
+        private SceneLight GetClosestCandidateLight(List<SceneLight> candidateLights)
+        {
+            SceneLight candidateLight = null;
+            float closestDistance = float.MaxValue;
+
+            for (int i = 0; i < candidateLights.Count; i++)
+            {
+                candidateLight = candidateLights[i];
+                float distance = Vector3.Distance(transform.position, candidateLight.transform.position);
+
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    candidateLight = candidateLights[i];
                 }
             }
 
-            CurrentDetectedLight = null;
-            return false;
+            return candidateLight;
         }
 
         public void SetDetectionStrategy(IDetectionStrategy detectionStrategy) => _detectionStrategy = detectionStrategy;

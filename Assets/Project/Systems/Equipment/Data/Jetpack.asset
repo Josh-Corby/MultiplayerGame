@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48a1a8cf3d0bf584d8ac2410a4ffe3a1, type: 3}
+  m_Name: Jetpack
+  m_EditorClassIdentifier: 
+  DisplayName: Jetpack
+  Icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  HasCharge: 1
+  AddToInventory: 0
+  _fuel: 30

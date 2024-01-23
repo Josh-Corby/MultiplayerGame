@@ -23,19 +23,24 @@ namespace Project
             Debug.Log("Wander");
             _agent.speed = _wanderSpeed;
             _animator.CrossFade(WalkHash, _crossFadeDuration);
+            GetNewDestination();
         }
 
+        private void GetNewDestination()
+        {
+            // find a new destination
+            var randomDirection = Random.insideUnitSphere * _wanderRadius;
+            randomDirection += _enemyTransform.position;
+            NavMeshHit hit;
+            NavMesh.SamplePosition(randomDirection, out hit, _wanderRadius, 1);
+            var finalPosition = hit.position;
+            _agent.SetDestination(finalPosition);
+        }
         public override void Update()
         {
             if (HasReachedDestination())
             {
-                // find a new destination
-                var randomDirection = Random.insideUnitSphere * _wanderRadius;
-                randomDirection += _enemyTransform.position;
-                NavMeshHit hit;
-                NavMesh.SamplePosition(randomDirection, out hit, _wanderRadius, 1);
-                var finalPosition = hit.position;
-                _agent.SetDestination(finalPosition);
+                GetNewDestination();
             }
         }
 

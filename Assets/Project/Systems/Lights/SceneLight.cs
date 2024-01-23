@@ -1,71 +1,39 @@
 using KBCore.Refs;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace Project
 {
-    public class SceneLight : ValidatedMonoBehaviour
+    public class SceneLight : NetworkBehaviour
     {
         public bool IsPowered;
         [SerializeField] private bool _startOn;
-        [SerializeField, Self] private Light _linkedLight;
-        public bool IsOn { get; private set; }
+        [SerializeField] private Light _linkedLight;
+        public NetworkVariable<bool> IsOn { get; private set; } = new NetworkVariable<bool>(
+                                                        readPerm: NetworkVariableReadPermission.Everyone, 
+                                                        writePerm: NetworkVariableWritePermission.Server);
 
-        private void Awake()
+        public override void OnNetworkSpawn()
         {
-            IsOn = _startOn;
-        }
+            if (IsOwner)
+                IsOn.Value = _startOn;
 
-        private void Start()
-        {
+            Debug.Log("Registering Light");
             SceneLightManager.Instance.RegisterLight(this);
-            if(IsOn)
-            {
-                SceneLightManager.Instance.RegisterActiveLight(this);
-            }
+            SetLightEnabled(IsOn.Value);
         }
-       
+  
         public void ToggleLight()
         {
-            IsOn = !IsOn;
-            SetLightEnabled(IsOn);
+            SetLightEnabled(!IsOn.Value);
         }
 
         public void SetLightEnabled(bool enabled)
         {
-            if(enabled)
-            {
-                EnableLight();
-                return;
-            }
-
-            if(!enabled)
-            {
-                DisableLight();
-                return;
-            }
+            if (IsServer)
+                IsOn.Value = enabled;
+            _linkedLight.enabled = enabled;
         }
 
-        public void EnableLight()
-        {
-            IsOn = true;
-            SceneLightManager.Instance.RegisterActiveLight(this);
-            Debug.Log($"Light {gameObject.name} turned on");
-            _linkedLight.enabled = true;
-        }
-
-        public void DisableLight()
-        {
-            IsOn = false;
-            SceneLightManager.Instance.DeregisterActiveLight(this);
-            Debug.Log($"Light {gameObject.name} turned off");
-            _linkedLight.enabled = false;
-        }
-
-
-        private void OnDestroy()
-        {
-            if(SceneLightManager.Instance != null)
-                    SceneLightManager.Instance.DeregisterLight(this);
-        }
     }
 }

@@ -14,10 +14,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Project/Scenes/NightmareTestScene.unity
     guid: d0b9e7c119dd4c24aa181b5cfb8fc66b
-  - enabled: 1
+  - enabled: 0
     path: Assets/Project/Scenes/CharacterMotorScene_SphericalGravity.unity
     guid: da452ceaf8196d44bb4476311ef0ff55
-  - enabled: 1
+  - enabled: 0
     path: Assets/Project/Scenes/CharacterMotorScene_InvertedGravity.unity
     guid: f09b49e8b55f7d046a970005ccd5820f
   m_configObjects:

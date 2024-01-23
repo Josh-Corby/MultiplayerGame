@@ -1,3 +1,4 @@
+using Project;
 using Unity.Netcode;
 using UnityEngine;
 using Utilities;
@@ -22,9 +23,9 @@ public class Interactor : NetworkBehaviour
             RunInteractionCheck();
             _detectionTimer.Start();
         };
-    }
 
-    private void Start() => _detectionTimer.Start();
+        _detectionTimer.Start();
+    }
 
     private void Update() => _detectionTimer.Tick(Time.deltaTime);
 
@@ -32,12 +33,12 @@ public class Interactor : NetworkBehaviour
     {
         Debug.DrawRay(_detectionStartPoint.position, _detectionStartPoint.transform.forward, Color.red, _detectionDistance);
 
-        if (Physics.Raycast(_detectionStartPoint.position, _detectionStartPoint.transform.forward, out RaycastHit hit, _detectionDistance, _interactableMask))
+        if (Physics.Raycast(_detectionStartPoint.position, _detectionStartPoint.transform.forward, out RaycastHit hit, 
+                            _detectionDistance, _interactableMask, QueryTriggerInteraction.Collide))
         {
             if (hit.collider.gameObject.TryGetComponent<IInteractable>(out var interactable))
             {
                 Interactable = interactable;
-                Debug.Log(hit.collider.gameObject.name);
             }
         }
         else
@@ -49,5 +50,14 @@ public class Interactor : NetworkBehaviour
     public void Interact()
     {
         Interactable?.Interact(this);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.TryGetComponent<Pickup>(out var pickup))
+        {
+            if(pickup.PickupOnContact)
+                pickup.Interact(this);
+        }
     }
 }

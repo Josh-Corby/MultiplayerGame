@@ -53,14 +53,14 @@ public class InventoryController : NetworkBehaviour
     {
         _input.ToggleInventory += OnToggleInventory;
         _input.RotateItem += RotateItem;
-        _input.UseItem += OnUseItem;
+        _input.UseEquipment += OnUseItem;
     }
 
     private void OnDisable()
     {
         _input.ToggleInventory -= OnToggleInventory;
         _input.RotateItem -= RotateItem;
-        _input.UseItem -= OnUseItem;
+        _input.UseEquipment -= OnUseItem;
     }
 
     private void Update()

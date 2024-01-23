@@ -17,18 +17,9 @@ namespace Project
             _connectedLights = SceneLightManager.Instance.AllLights;
         }
 
-        private void Start()
-        {
-            foreach (SceneLight light in _connectedLights)
-            {
-                light.SetLightEnabled(_startEnabled);
-            }
-        }
-
         public void Interact(Interactor interactor)
         {
             throw new System.NotImplementedException();
         }
-
     }
 }

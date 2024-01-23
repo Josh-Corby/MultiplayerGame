@@ -14,8 +14,10 @@ namespace Project.Input
         public event UnityAction<bool> Run = delegate { };
         public event UnityAction<bool> Crouch = delegate { };
         public event UnityAction PrimaryAction = delegate { };
+        public event UnityAction PreviousEquipment = delegate { };
+        public event UnityAction NextEquipment = delegate { };
+        public event UnityAction UseEquipment = delegate { };
         public event UnityAction ToggleInventory = delegate { };
-        public event UnityAction UseItem = delegate { };
         public event UnityAction RotateItem = delegate { };
 
         public PlayerInputActions InputActions { get; private set; }
@@ -49,19 +51,6 @@ namespace Project.Input
                 Look?.Invoke(Vector2.zero);
         }
 
-        public void OnCrouch(InputAction.CallbackContext context)
-        {
-            switch (context.phase)
-            {
-                case InputActionPhase.Started:
-                    Crouch?.Invoke(true);
-                    break;
-                case InputActionPhase.Canceled:
-                    Crouch?.Invoke(false);
-                    break;
-            }
-        }
-
         public void OnJump(InputAction.CallbackContext context)
         {
             switch (context.phase)
@@ -89,21 +78,46 @@ namespace Project.Input
             }
         }
 
+        public void OnCrouch(InputAction.CallbackContext context)
+        {
+            switch (context.phase)
+            {
+                case InputActionPhase.Started:
+                    Crouch?.Invoke(true);
+                    break;
+                case InputActionPhase.Canceled:
+                    Crouch?.Invoke(false);
+                    break;
+            }
+        }
+
         public void OnPrimaryAction(InputAction.CallbackContext context)
         {
             if(context.phase == InputActionPhase.Started)
                 PrimaryAction?.Invoke();
         }
 
-        public void OnToggleInventory(InputAction.CallbackContext context)
+        public void OnPreviousEquipment(InputAction.CallbackContext context)
         {
-            ToggleInventory?.Invoke();
+            if(context.phase == InputActionPhase.Started)
+                PreviousEquipment?.Invoke();
+        }
+
+        public void OnNextEquipment(InputAction.CallbackContext context)
+        {
+            if (context.phase == InputActionPhase.Started)
+                NextEquipment?.Invoke();
         }
 
         public void OnUseItem(InputAction.CallbackContext context)
         {
             if(context.phase == InputActionPhase.Started)
-                UseItem?.Invoke();
+                UseEquipment?.Invoke();
+        }
+
+        public void OnToggleInventory(InputAction.CallbackContext context)
+        {
+            ToggleInventory?.Invoke();
         }
 
         public void OnRotateItem(InputAction.CallbackContext context)

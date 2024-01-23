@@ -1,4 +1,5 @@
 using KBCore.Refs;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.AI;
 using Utilities;
@@ -6,7 +7,7 @@ using Utilities;
 namespace Project
 {
     [RequireComponent(typeof(NavMeshAgent))]
-    public class Enemy : MonoBehaviour, IDamageable
+    public class Enemy : NetworkBehaviour, IDamageable
     {
         [SerializeField, Self] protected NavMeshAgent _agent;
         [SerializeField, Self] protected PlayerDetector _playerDetector;
@@ -31,6 +32,7 @@ namespace Project
 
         private void Start()
         {
+            if(!IsServer) enabled = false;
             _attackTimer = new CountdownTimer(_timeBetweenAttacks);
             _stateMachine = new StateMachine();
 

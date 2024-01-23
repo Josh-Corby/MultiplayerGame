@@ -51,7 +51,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""id"": ""285bc006-1d91-442b-8cbd-18272a66181a"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
-                    ""interactions"": """",
+                    ""interactions"": ""Press(behavior=2)"",
                     ""initialStateCheck"": false
                 },
                 {
@@ -76,6 +76,24 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""name"": ""PrimaryAction"",
                     ""type"": ""Button"",
                     ""id"": ""a8218c8b-67ac-4380-8b46-2ac1f7fa9bf9"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""PreviousEquipment"",
+                    ""type"": ""Button"",
+                    ""id"": ""100eab50-ff69-425f-93a3-6c4184e21af3"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""NextEquipment"",
+                    ""type"": ""Button"",
+                    ""id"": ""d66e4210-2aa5-4ea0-993c-3931c2f35d19"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -267,7 +285,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""207a035e-75bd-4c26-9c4e-771e1ef5312c"",
-                    ""path"": ""<Mouse>/leftButton"",
+                    ""path"": ""<Keyboard>/f"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
@@ -294,6 +312,28 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
                     ""action"": ""RotateItem"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""abacb3d7-179c-4bc9-b110-fcfac8cfee70"",
+                    ""path"": ""<Keyboard>/leftBracket"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""PreviousEquipment"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b7af0494-f439-42b3-ae2f-03aeb586049f"",
+                    ""path"": ""<Keyboard>/rightBracket"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""NextEquipment"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -887,6 +927,8 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Player_Run = m_Player.FindAction("Run", throwIfNotFound: true);
         m_Player_Crouch = m_Player.FindAction("Crouch", throwIfNotFound: true);
         m_Player_PrimaryAction = m_Player.FindAction("PrimaryAction", throwIfNotFound: true);
+        m_Player_PreviousEquipment = m_Player.FindAction("PreviousEquipment", throwIfNotFound: true);
+        m_Player_NextEquipment = m_Player.FindAction("NextEquipment", throwIfNotFound: true);
         m_Player_UseItem = m_Player.FindAction("UseItem", throwIfNotFound: true);
         m_Player_ToggleInventory = m_Player.FindAction("ToggleInventory", throwIfNotFound: true);
         m_Player_RotateItem = m_Player.FindAction("RotateItem", throwIfNotFound: true);
@@ -969,6 +1011,8 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Run;
     private readonly InputAction m_Player_Crouch;
     private readonly InputAction m_Player_PrimaryAction;
+    private readonly InputAction m_Player_PreviousEquipment;
+    private readonly InputAction m_Player_NextEquipment;
     private readonly InputAction m_Player_UseItem;
     private readonly InputAction m_Player_ToggleInventory;
     private readonly InputAction m_Player_RotateItem;
@@ -982,6 +1026,8 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         public InputAction @Run => m_Wrapper.m_Player_Run;
         public InputAction @Crouch => m_Wrapper.m_Player_Crouch;
         public InputAction @PrimaryAction => m_Wrapper.m_Player_PrimaryAction;
+        public InputAction @PreviousEquipment => m_Wrapper.m_Player_PreviousEquipment;
+        public InputAction @NextEquipment => m_Wrapper.m_Player_NextEquipment;
         public InputAction @UseItem => m_Wrapper.m_Player_UseItem;
         public InputAction @ToggleInventory => m_Wrapper.m_Player_ToggleInventory;
         public InputAction @RotateItem => m_Wrapper.m_Player_RotateItem;
@@ -1012,6 +1058,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @PrimaryAction.started += instance.OnPrimaryAction;
             @PrimaryAction.performed += instance.OnPrimaryAction;
             @PrimaryAction.canceled += instance.OnPrimaryAction;
+            @PreviousEquipment.started += instance.OnPreviousEquipment;
+            @PreviousEquipment.performed += instance.OnPreviousEquipment;
+            @PreviousEquipment.canceled += instance.OnPreviousEquipment;
+            @NextEquipment.started += instance.OnNextEquipment;
+            @NextEquipment.performed += instance.OnNextEquipment;
+            @NextEquipment.canceled += instance.OnNextEquipment;
             @UseItem.started += instance.OnUseItem;
             @UseItem.performed += instance.OnUseItem;
             @UseItem.canceled += instance.OnUseItem;
@@ -1043,6 +1095,12 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @PrimaryAction.started -= instance.OnPrimaryAction;
             @PrimaryAction.performed -= instance.OnPrimaryAction;
             @PrimaryAction.canceled -= instance.OnPrimaryAction;
+            @PreviousEquipment.started -= instance.OnPreviousEquipment;
+            @PreviousEquipment.performed -= instance.OnPreviousEquipment;
+            @PreviousEquipment.canceled -= instance.OnPreviousEquipment;
+            @NextEquipment.started -= instance.OnNextEquipment;
+            @NextEquipment.performed -= instance.OnNextEquipment;
+            @NextEquipment.canceled -= instance.OnNextEquipment;
             @UseItem.started -= instance.OnUseItem;
             @UseItem.performed -= instance.OnUseItem;
             @UseItem.canceled -= instance.OnUseItem;
@@ -1240,6 +1298,8 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnRun(InputAction.CallbackContext context);
         void OnCrouch(InputAction.CallbackContext context);
         void OnPrimaryAction(InputAction.CallbackContext context);
+        void OnPreviousEquipment(InputAction.CallbackContext context);
+        void OnNextEquipment(InputAction.CallbackContext context);
         void OnUseItem(InputAction.CallbackContext context);
         void OnToggleInventory(InputAction.CallbackContext context);
         void OnRotateItem(InputAction.CallbackContext context);

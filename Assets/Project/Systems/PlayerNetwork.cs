@@ -12,6 +12,7 @@ namespace Project
         private CinemachineVirtualCamera _playerCamera;
         private AudioListener _playerAudioListener;
         private InventoryController _inventoryController;
+        private ObjectThrower _thrower;
 
         [SerializeField] private UsableItem_Base _currentItem;
 
@@ -20,7 +21,7 @@ namespace Project
             _playerCamera = GetComponentInChildren<CinemachineVirtualCamera>();
             _playerAudioListener = GetComponentInChildren<AudioListener>();
             _inventoryController = GetComponentInChildren<InventoryController>();
-            _currentItem = GetComponentInChildren<UsableItem_Base>();
+            _thrower = GetComponent<ObjectThrower>();
         }
 
         public override void OnNetworkSpawn()
@@ -41,16 +42,25 @@ namespace Project
 
         private void OnEnable()
         {
-            _input.UseItem += UseItem;
+
+            _input.UseEquipment += UseItem;
         }
 
         private void OnDisable()
         {
-            _input.UseItem -= UseItem;
+            _input.UseEquipment -= UseItem;
         }
 
         private void UseItem()
         {
+            if (_currentItem == null) return;
+            if(_currentItem.TryGetComponent<IThrowable>(out var throwable))
+            {
+                _thrower.ThrowObject(_currentItem.gameObject);
+                throwable.OnThrow();
+                return;
+            }
+
             _currentItem.Use();
         }
     }

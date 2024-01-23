@@ -20,6 +20,7 @@ namespace Project
         {
             _linkedSource.PlayOneShot(_hitGroundSounds[Random.Range(0, _hitGroundSounds.Count)]);
         }
+
         public void OnFootstep(Vector3 location, float currentVelocity)
         {
             _linkedSource.PlayOneShot(_footstepSounds[Random.Range(0, _footstepSounds.Count)]);

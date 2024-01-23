@@ -18,7 +18,7 @@ namespace Project
 
         public override void OnEnter()
         {
-            Debug.Log("Wander");
+            Debug.Log("Going to light");
             _agent.speed = _toLightSpeed;
             _animator.CrossFade(WalkHash, _crossFadeDuration);
             _agent.SetDestination(_target.position);
@@ -28,8 +28,11 @@ namespace Project
         {
             if (HasReachedDestination())
             {
-                if (_targetLight.IsOn)
-                    _targetLight.SetLightEnabled(false);
+                if (_targetLight.IsOn.Value)
+                {
+                    _targetLight.GetComponentInChildren<LightSwitch>().Interact();
+                    _target = null;
+                }
             }
         }
 
@@ -37,6 +40,7 @@ namespace Project
         {
             _targetLight = target.GetComponent<SceneLight>();
             _target = target.GetChild(0).transform;
+            _agent.SetDestination(target.position);
         }
 
         private bool HasReachedDestination()

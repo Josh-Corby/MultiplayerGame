@@ -11,9 +11,9 @@ namespace Project
             LateUpdate
         }
 
-        [SerializeField] EUpdateMode UpdateMode = EUpdateMode.FixedUpdate;
-        [SerializeField] bool ApplyGravity = true;
-        Rigidbody LinkedRB;
+        [SerializeField] EUpdateMode _updateMode = EUpdateMode.FixedUpdate;
+        public bool ApplyGravity = true;
+        private Rigidbody _linkedRB;
 
         public Vector3 GravityVector { get; private set; } = Vector3.zero;
         public Vector3 Up { get; private set; } = Vector3.zero;
@@ -21,30 +21,30 @@ namespace Project
 
         private void Awake()
         {
-            LinkedRB = GetComponent<Rigidbody>();
+            _linkedRB = GetComponent<Rigidbody>();
         }
 
         // Update is called once per frame
         void Update()
         {
-            if (UpdateMode == EUpdateMode.Update)
+            if (_updateMode == EUpdateMode.Update)
                 UpdateGravity();
         }
 
         void LateUpdate()
         {
-            if (UpdateMode == EUpdateMode.LateUpdate)
+            if (_updateMode == EUpdateMode.LateUpdate)
                 UpdateGravity();
         }
 
         void FixedUpdate()
         {
-            if (UpdateMode == EUpdateMode.FixedUpdate)
+            if (_updateMode == EUpdateMode.FixedUpdate)
                 UpdateGravity();
 
             // apply gravity
             if (ApplyGravity)
-                LinkedRB.AddForce(GravityVector, ForceMode.Acceleration);
+                _linkedRB.AddForce(GravityVector, ForceMode.Acceleration);
         }
 
         void UpdateGravity()

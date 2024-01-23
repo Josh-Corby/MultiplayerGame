@@ -45,11 +45,11 @@ namespace Project
         private void RequestInteractServerRpc(ulong interactorClientID)
         {
             _isOpen.Value = !_isOpen.Value;
-            FireInteractClientRPC(interactorClientID);
+            FireInteractClientRpc(interactorClientID);
         }
 
         [ClientRpc]
-        private void FireInteractClientRPC(ulong interactorClientID)
+        private void FireInteractClientRpc(ulong interactorClientID)
         {
             if (NetworkManager.Singleton.LocalClientId == interactorClientID) return;
 

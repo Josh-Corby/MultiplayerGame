@@ -16,6 +16,7 @@ namespace Project
 
         private void Start()
         {
+            if(!IsServer) enabled = false;
             _attackTimer = new CountdownTimer(_timeBetweenAttacks);
             _stateMachine = new StateMachine();
 
@@ -68,6 +69,7 @@ namespace Project
                     return false;
                 }));
 
+                At(attackState, wanderState, new FuncPredicate(() => !_playerDetector.CanDetectPlayer()));
                 At(goToLightState, wanderState, new FuncPredicate(() => !_lightDetector.CanSeeLight()));
                 At(chaseState, wanderState, new FuncPredicate(() => !_playerDetector.CanDetectPlayer()));
                 _stateMachine.SetState(wanderState);

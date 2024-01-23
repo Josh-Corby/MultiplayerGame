@@ -29,7 +29,7 @@
                     "id": "285bc006-1d91-442b-8cbd-18272a66181a",
                     "expectedControlType": "Button",
                     "processors": "",
-                    "interactions": "",
+                    "interactions": "Press(behavior=2)",
                     "initialStateCheck": false
                 },
                 {
@@ -54,6 +54,24 @@
                     "name": "PrimaryAction",
                     "type": "Button",
                     "id": "a8218c8b-67ac-4380-8b46-2ac1f7fa9bf9",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "PreviousEquipment",
+                    "type": "Button",
+                    "id": "100eab50-ff69-425f-93a3-6c4184e21af3",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "NextEquipment",
+                    "type": "Button",
+                    "id": "d66e4210-2aa5-4ea0-993c-3931c2f35d19",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -245,7 +263,7 @@
                 {
                     "name": "",
                     "id": "207a035e-75bd-4c26-9c4e-771e1ef5312c",
-                    "path": "<Mouse>/leftButton",
+                    "path": "<Keyboard>/f",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
@@ -272,6 +290,28 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "RotateItem",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "abacb3d7-179c-4bc9-b110-fcfac8cfee70",
+                    "path": "<Keyboard>/leftBracket",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "PreviousEquipment",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b7af0494-f439-42b3-ae2f-03aeb586049f",
+                    "path": "<Keyboard>/rightBracket",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "NextEquipment",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

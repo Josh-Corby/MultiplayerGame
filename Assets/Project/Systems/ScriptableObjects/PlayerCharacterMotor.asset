@@ -29,8 +29,8 @@ MonoBehaviour:
   Material_Default: {fileID: 13400000, guid: 91fe3ee2319f3384d8e56aeece9ac212, type: 2}
   Material_Jumping: {fileID: 13400000, guid: 67ff9e90212d67b4fac35262e5bc10ec, type: 2}
   Camera_InvertY: 0
-  Camera_HorizontalSensitivity: 70
-  Camera_VerticalSensitivity: 50
+  Camera_HorizontalSensitivity: 35
+  Camera_VerticalSensitivity: 25
   Camera_MinPitch: -75
   Camera_MaxPitch: 75
   Camera_InitialDiscardTime: 0.2
