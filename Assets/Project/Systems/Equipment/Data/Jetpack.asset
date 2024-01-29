@@ -15,5 +15,5 @@ MonoBehaviour:
   DisplayName: Jetpack
   Icon: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   HasCharge: 1
-  AddToInventory: 0
+  AddToInventory: 1
   _fuel: 30

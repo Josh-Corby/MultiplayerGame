@@ -470,7 +470,7 @@ namespace Project
             if (CurrentHealth <= 0f && _previousHealth > 0f)
                 OnPlayerDied.Invoke(this);
 
-            Debug.Log(CurrentHealth);
+            //Debug.Log(CurrentHealth);
         }
 
         protected void UpdateHealth()

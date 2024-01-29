@@ -130,7 +130,6 @@ namespace Project.Input
         {
             Cursor.visible = enabled;
             Cursor.lockState = enabled ? CursorLockMode.Confined : CursorLockMode.Locked;
-
         }
     }
 }

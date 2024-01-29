@@ -1,7 +1,7 @@
-using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 namespace Project
@@ -11,6 +11,8 @@ namespace Project
         [SerializeField] private GameObject _playerPrefab;
 
         public List<PlayerNetwork> ConnectedPlayers = new List<PlayerNetwork>();
+
+        public event UnityAction<PlayerNetwork> OnPlayerConnected = delegate { }; 
 
         private void OnEnable()
         {
@@ -29,6 +31,7 @@ namespace Project
         public void RegisterConnectedPlayer(PlayerNetwork player)
         {
             ConnectedPlayers.Add(player);
+            OnPlayerConnected?.Invoke(player);
         }
 
         public void DeRegisterConnectedPlayer(PlayerNetwork player)

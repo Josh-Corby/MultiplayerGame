@@ -9,16 +9,16 @@ namespace Project
     {
         [SerializeField] private InputReader _input;
 
-        private CinemachineVirtualCamera _playerCamera;
+        private CinemachineVirtualCamera _vcam;
         private AudioListener _playerAudioListener;
         private InventoryController _inventoryController;
         private ObjectThrower _thrower;
-
+        [SerializeField] private Camera _cam;
         [SerializeField] private UsableItem_Base _currentItem;
 
         private void Awake()
         {
-            _playerCamera = GetComponentInChildren<CinemachineVirtualCamera>();
+            _vcam = GetComponentInChildren<CinemachineVirtualCamera>();
             _playerAudioListener = GetComponentInChildren<AudioListener>();
             _inventoryController = GetComponentInChildren<InventoryController>();
             _thrower = GetComponent<ObjectThrower>();
@@ -30,19 +30,19 @@ namespace Project
             if (!IsOwner)
             {
                 _playerAudioListener.enabled = false;
-                _playerCamera.Priority = 0;
                 _inventoryController.enabled = false;
+                _cam.enabled = false;
                 return;
             }
 
+            _cam.GetComponent<CinemachineBrain>().enabled = true;
             _playerAudioListener.enabled = true;
-            _playerCamera.Priority = 100;
+            _vcam.Priority = 100;
             _input.EnablePlayerActions();
         }
 
         private void OnEnable()
         {
-
             _input.UseEquipment += UseItem;
         }
 
@@ -54,7 +54,7 @@ namespace Project
         private void UseItem()
         {
             if (_currentItem == null) return;
-            if(_currentItem.TryGetComponent<IThrowable>(out var throwable))
+            if (_currentItem.TryGetComponent<IThrowable>(out var throwable))
             {
                 _thrower.ThrowObject(_currentItem.gameObject);
                 throwable.OnThrow();
